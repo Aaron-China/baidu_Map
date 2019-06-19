@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>百度地图用法示例</title>
+  <link rel="stylesheet" media="all" href="http://api.map.baidu.com/library/SearchInfoWindow/1.5/src/SearchInfoWindow_min.css">
+  <style>
+    #myMap {
+      width: 700px;
+      height: 400px;
+      margin: 100px auto;
+    }
+    #myMap .grayInfo{
+      background-color: white;
+      width: 220px;
+      border-radius: 5px 5px;
+    }
+    #myMap .grayInfo .title {
+      padding: 0 10px;
+      height: 35px;
+      line-height: 35px;
+      background-color: #444444;
+      border-radius: 5px 5px 0px 0px;
+      color: white;
+    }
+    #myMap .grayInfo .content {
+      padding: 10px;
+      min-height: 50px;
+    }
+  </style>
+</head>
+<script type="text/javascript" src="http://api.map.baidu.com/api?v=2.0&ak=GnxvpyTNsiAKTA9cHGpwGYCtbebrBhDW"></script>
+<script type="text/javascript" src="http://api.map.baidu.com/library/TextIconOverlay/1.2/src/TextIconOverlay_min.js"></script>
+<script type="text/javascript" src="http://api.map.baidu.com/library/MarkerClusterer/1.2/src/MarkerClusterer_min.js"></script>
+<script type="text/javascript" src="http://api.map.baidu.com/library/CurveLine/1.5/src/CurveLine.min.js"></script>
+<script type="text/javascript" src="http://api.map.baidu.com/library/SearchInfoWindow/1.5/src/SearchInfoWindow_min.js"></script>
+<script type="text/javascript" src="./js/InfoBox_main.js"></script>
+<script type="text/javascript" src="./js/constants.js"></script>
+<body>
+  <div id="myMap"></div>
+</body>
+<script type="text/javascript">
+//1、 基本配置
+  const BMap = window.BMap
+  const map = new BMap.Map("myMap", {
+    minZoom: 3,
+    maxZoom: 20,
+  });
+  map.clearOverlays();
+  map.centerAndZoom(new BMap.Point(120.08469, 30.301904), 13);
+  map.enableScrollWheelZoom(true);
+
+
+//2、 设置 默认主题 和 自定义主题
+  // 默认主题 normal blueSky  light  dark  googlelite  grassgreen  midnight  pink  bluish  grayscale
+  // 还有几个默认主题，但是发现并不好使
+  map.setMapStyle({
+    style: 'bluish'
+  });
+
+  // 自定义主题， http://lbsyun.baidu.com/custom/  自定义，完事导出json配置
+  // map.setMapStyle({
+  //   styleJson: THEME_CUS
+  // });
+
+
+//3、 设置 点标注
+  const points = [
+    { lng: 120.03469, lat: 30.303904, infoWindow: 'search', func: true},
+    { lng: 120.088499, lat: 30.275182,infoWindow: 'default' },
+    { lng: 120.089249, lat: 30.317759, infoWindow: 'InfoBox' },
+
+    { lng: 120.161941, lat: 30.283073, infoWindow: 'InfoBox', type: 1 },
+    { lng: 120.174941, lat: 30.275073, infoWindow: 'InfoBox', type: 1 },
+    { lng: 120.186941, lat: 30.297073, infoWindow: 'InfoBox', type: 1 },
+    { lng: 120.198941, lat: 30.299073, infoWindow: 'InfoBox', type: 1 },
+  ]
+  const markerClusterers = [[], []]
+  points.forEach(item => {
+    //点
+    const point = new BMap.Point(item.lng, item.lat)
+    const icon = new BMap.Icon(
+      './image/yellow.png',
+      new BMap.Size(32, 32)
+    );
+    const marker = new BMap.Marker(point, { icon: icon });
+    //动画
+    marker.setAnimation(BMAP_ANIMATION_BOUNCE)
+    //文字标签
+    const label = new BMap.Label(
+      '我是文字描述',
+      { offset: new BMap.Size( 20, 20 ) }
+    )
+    label.setStyle({
+      color : "red",
+        fontSize : "12px",
+        height : "20px",
+        lineHeight : "20px",
+        fontFamily:"微软雅黑"
+    });
+    marker.setLabel(label);
+
+    //信息窗口
+    if (item.infoWindow === 'default') {
+      const infoWindow = new BMap.InfoWindow('简易的信息窗口')
+      marker.addEventListener("click", function(){
+        this.map.openInfoWindow(infoWindow,point);
+      });
+    } else if (item.infoWindow === 'search') {
+      const searchInfoWindow = new window.BMapLib.SearchInfoWindow(map, '综合功能型信息窗口', {
+        width: 200,
+        height: 80,
+        panel: "panel",
+        enableAutoPan : true,
+          searchTypes:[
+            BMAPLIB_TAB_SEARCH,
+            BMAPLIB_TAB_TO_HERE,
+            BMAPLIB_TAB_FROM_HERE
+          ]
+      });
+      marker.addEventListener("click", function(){
+        searchInfoWindow.open(point)
+      });
+    } else if (item.infoWindow === 'InfoBox') {
+      const customizedInfoWindow = new window.BMapLib.InfoBox(map, `<div class="grayInfo">
+        <div class="title">完全自定义型信息窗口</div>
+        <div class="content">内容</div>
+      </div>`);
+      marker.addEventListener("click", function(){
+        customizedInfoWindow.open(point)
+      });
+    }
+    if (item.func) marker.addEventListener("click", function () {alert('你好')});
+    markerClusterers[item.type || 0].push(marker)
+    map.addOverlay(marker);
+  })
+
+
+//3、 设置 图形标注
+  const style = {strokeColor: "red", strokeWeight: 2, strokeOpacity: 1, fillColor: "#f8e71c", fillOpacity: 0.3}
+  const graphPoints = [{lng: 120.126973, lat: 30.30897}, {lng: 120.2822, lat: 30.326927}, {lng: 120.209186, lat: 30.225126}]
+  let polygonPoint = graphPoints.map(point => {
+    return new BMap.Point(point.lng, point.lat)
+  })
+  let polygon = new BMap.Polygon(
+    polygonPoint,
+    {
+      ...style
+    }
+  )
+  polygon.addEventListener("click",function () {alert('你好啊')});
+  // polygon.enableEditing()  // 多边形可编辑
+  map.addOverlay(polygon);
+
+
+//4、 设置 聚合 markerClusterers
+  markerClusterers.forEach((item, index) => {
+    if (window[`markerClusterer${index}`]) window[`markerClusterer${index}`].clearMarkers()
+    // delete this.markerClusterer
+    window[`markerClusterer${index}`] = null
+  })
+
+  const size = new BMap.Size( 48, 48 )
+  window.markerClusterer1 = new window.BMapLib.MarkerClusterer(map, {
+    markers: markerClusterers[1],
+    styles: [{
+      url: './image/wuxing1.png',
+      size: size,
+      textSize: 18,
+      textColor: 'white',
+    }, {
+      url: './image/wuxing.png',
+      size: size,
+      textSize: 18,
+      textColor: 'white',
+    }, {
+      url: './image/wuxing2.png',
+      size: size,
+      textSize: 18,
+      textColor: 'white',
+    }]
+  })
+  window.markerClusterer2 = new window.BMapLib.MarkerClusterer(map, { markers: markerClusterers[0] })
+
+
+
+
+
+
+
+</script>
+</html>
