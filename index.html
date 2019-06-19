@@ -29,7 +29,7 @@
     }
   </style>
 </head>
-<script type="text/javascript" src="http://api.map.baidu.com/api?v=2.0&ak=GnxvpyTNsiAKTA9cHGpwGYCtbebrBhDW"></script>
+<script type="text/javascript" src="http://api.map.baidu.com/api?v=2.0&ak=*******"></script>
 <script type="text/javascript" src="http://api.map.baidu.com/library/TextIconOverlay/1.2/src/TextIconOverlay_min.js"></script>
 <script type="text/javascript" src="http://api.map.baidu.com/library/MarkerClusterer/1.2/src/MarkerClusterer_min.js"></script>
 <script type="text/javascript" src="http://api.map.baidu.com/library/CurveLine/1.5/src/CurveLine.min.js"></script>
@@ -54,14 +54,14 @@
 //2、 设置 默认主题 和 自定义主题
   // 默认主题 normal blueSky  light  dark  googlelite  grassgreen  midnight  pink  bluish  grayscale
   // 还有几个默认主题，但是发现并不好使
-  map.setMapStyle({
-    style: 'bluish'
-  });
+  // map.setMapStyle({
+  //   style: 'bluish'
+  // });
 
   // 自定义主题， http://lbsyun.baidu.com/custom/  自定义，完事导出json配置
-  // map.setMapStyle({
-  //   styleJson: THEME_CUS
-  // });
+  map.setMapStyle({
+    styleJson: THEME_CUS
+  });
 
 
 //3、 设置 点标注
@@ -136,7 +136,7 @@
   })
 
 
-//3、 设置 图形标注
+// //3、 设置 图形标注
   const style = {strokeColor: "red", strokeWeight: 2, strokeOpacity: 1, fillColor: "#f8e71c", fillOpacity: 0.3}
   const graphPoints = [{lng: 120.126973, lat: 30.30897}, {lng: 120.2822, lat: 30.326927}, {lng: 120.209186, lat: 30.225126}]
   let polygonPoint = graphPoints.map(point => {
@@ -149,7 +149,7 @@
     }
   )
   polygon.addEventListener("click",function () {alert('你好啊')});
-  // polygon.enableEditing()  // 多边形可编辑
+  polygon.enableEditing()  // 多边形可编辑
   map.addOverlay(polygon);
 
 
